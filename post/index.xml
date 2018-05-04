@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>zhangsp&#39;s blog</title>
-    <link>https://zhangshp.github.io/</link>
-    <description>Recent content on zhangsp&#39;s blog</description>
+    <title>Posts on zhangsp&#39;s blog</title>
+    <link>https://zhangshp.github.io/post/</link>
+    <description>Recent content in Posts on zhangsp&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 04 May 2018 09:10:11 +0800</lastBuildDate>
     
-        <atom:link href="https://zhangshp.github.io/index.xml" rel="self" type="application/rss+xml" />
-    
+	<atom:link href="https://zhangshp.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -30,7 +29,6 @@ certbot certonly --webroot -w /var/www/example -d www.example.com --webroot 指�
 Webroot模式在网站根目录下创建临时文件({webroot-path}/.well-known/acme-challenge)，然后Let’s Encrypt 通过发送HTTP请求去验证域名和服务器是否属于你。为了能通过验证，我们必须配置服务器以便能访问到隐藏的目录(.well-known/acme-challenge)。下面是nginx的配置的例子：
 location /.well-known/acme-challenge { default_type &amp;#34;text/plain&amp;#34;; root /var/www/example/; } 其实 -w 可以为任意目录，但是必须保证Let’s Encrypt 通过发送HTTP请求去验证的时候能访问到该目录。</description>
     </item>
-    
     
   </channel>
 </rss>
