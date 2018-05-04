@@ -18,7 +18,7 @@
       <pubDate>Fri, 04 May 2018 09:10:11 +0800</pubDate>
       
       <guid>https://zhangshp.github.io/certbot%E5%85%8D%E8%B4%B9%E8%8E%B7%E5%8F%96https%E8%AF%81%E4%B9%A6/</guid>
-      <description>Let&amp;rsquo;s Encrypt与Certbot介绍 Let&amp;rsquo;s Encrypt是一个一个公共且免费SSL的项目，由Mozilla、Cisco、Akamai、IdenTrust、EFF等组织人员发起，主要的目的也是为了推进网站从HTTP向HTTPS过度的进程，目前已经有越来越多的商家加入和赞助支持。
+      <description>Let&amp;rsquo;s Encrypt与Certbot介绍 Let&amp;rsquo;s Encrypt是一个公共且免费SSL的项目，由Mozilla、Cisco、Akamai、IdenTrust、EFF等组织人员发起，主要的目的是为了推进网站从HTTP向HTTPS过度的进程，目前已经有越来越多的商家加入和赞助支持。
 Certbot是一款易用的自动获取和部署SSL/TLS证书的工具。Certbot由EFF开发，被称为 Let’s Encrypt 官方客户端。我们获取免费证书的工具就是Certbot。
 安装Certbot 推荐上Certbot 官网安装，如果没有找到相对应的操作系统和服务器软件则执行下面命令安装：
 wget https://dl.eff.org/certbot-auto chmod a+x certbot-auto Ubuntu 16及更高版本如果出现setuptools pkg_resources pip wheel failed with error code 1 错误，请执行以下命令：

@@ -59,7 +59,7 @@
 
 <h4 id="let-s-encrypt与certbot介绍">Let&rsquo;s Encrypt与Certbot介绍</h4>
 
-<p>Let&rsquo;s Encrypt是一个一个公共且免费SSL的项目，由Mozilla、Cisco、Akamai、IdenTrust、EFF等组织人员发起，主要的目的也是为了推进网站从HTTP向HTTPS过度的进程，目前已经有越来越多的商家加入和赞助支持。</p>
+<p>Let&rsquo;s Encrypt是一个公共且免费SSL的项目，由Mozilla、Cisco、Akamai、IdenTrust、EFF等组织人员发起，主要的目的是为了推进网站从HTTP向HTTPS过度的进程，目前已经有越来越多的商家加入和赞助支持。</p>
 
 <p>Certbot是一款易用的自动获取和部署SSL/TLS证书的工具。Certbot由EFF开发，被称为 Let’s Encrypt 官方客户端。我们获取免费证书的工具就是Certbot。</p>
 
@@ -108,15 +108,13 @@ chmod a+x certbot-auto</code></pre></div>
 <span style="color:#6ab825;font-weight:bold">ssl_certificate_key</span>  <span style="color:#ed9d13">/etc/letsencrypt/live/www.example.com/privkey.pem</span>;</code></pre></div>
 <h4 id="更新证书">更新证书</h4>
 
-<p>由于通过Certbot生成的Let&rsquo;s Encrypt证书只有90天的有效期，所以我们需要在证书到期前更新证书。我们可以通过运行下面的脚本来更新更新我们的证书：</p>
+<p>由于通过Certbot生成的Let&rsquo;s Encrypt证书只有90天的有效期，所以我们需要在证书到期前更新证书。我们可以通过运行下面的脚本来更新我们的证书：</p>
 <div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">certbot renew</code></pre></div>
 <p><code>renew</code> 会去更新距离过期时间少于30天的证书。</p>
 
 <p>我们还可以通过 cron job 来定时更新我们的证书，下面是一个每天凌晨和中午检查更新我们的证书例子：</p>
 <div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#3677a9">0</span> <span style="color:#3677a9">0</span>,12 * * * certbot renew </code></pre></div>
-<blockquote>
-<p>注意，如果你用的 Webroot 模式，更新证书后记得重启下服务器。</p>
-</blockquote>
+<p><strong>注意，如果你用的 Webroot 模式，更新证书后记得重启下服务器。</strong></p>
 
     </div>
  
