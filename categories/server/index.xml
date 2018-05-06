@@ -1,28 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>zhangsp&#39;s blog</title>
-    <link>https://zhangshp.github.io/</link>
-    <description>Recent content on zhangsp&#39;s blog</description>
+    <title>Server on zhangsp&#39;s blog</title>
+    <link>https://zhangshp.github.io/categories/server/</link>
+    <description>Recent content in Server on zhangsp&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 04 May 2018 21:27:01 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 04 May 2018 09:10:11 +0800</lastBuildDate>
     
-        <atom:link href="https://zhangshp.github.io/index.xml" rel="self" type="application/rss+xml" />
-    
-    
-    
-    <item>
-      <title>Go语言的一些陷阱总结</title>
-      <link>https://zhangshp.github.io/go%E8%AF%AD%E8%A8%80%E7%9A%84%E4%B8%80%E4%BA%9B%E9%99%B7%E9%98%B1%E6%80%BB%E7%BB%93/</link>
-      <pubDate>Fri, 04 May 2018 21:27:01 +0800</pubDate>
-      
-      <guid>https://zhangshp.github.io/go%E8%AF%AD%E8%A8%80%E7%9A%84%E4%B8%80%E4%BA%9B%E9%99%B7%E9%98%B1%E6%80%BB%E7%BB%93/</guid>
-      <description>给空map赋值 var m map[string]int m[&amp;#34;1&amp;#34;] = 1 //panic: assignment to entry in nil map  在给 map 添加元素 之前必须使用 make 初始化
-m := make(map[string]int) m[&amp;#34;1&amp;#34;] = 1 Nil pointer dereference type Point struct { X, Y float64 } func (p *Point) Abs() float64 { return math.Sqrt(p.X*p.X + p.Y*p.Y) } func main() { var p *Point fmt.Println(p.Abs())//panic: runtime error: invalid memory address or nil pointer dereference } 未初始化的指针为nil，它的地址是非法的，要使用指针，必须保证其不为nil。可以修改为下面的：
-func main(){ p = new(Point) fmt.</description>
-    </item>
-    
+	<atom:link href="https://zhangshp.github.io/categories/server/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -42,7 +28,6 @@ certbot certonly --webroot -w /var/www/example -d www.example.com --webroot 指�
 Webroot模式在网站根目录下创建临时文件({webroot-path}/.well-known/acme-challenge)，然后Let’s Encrypt 通过发送HTTP请求去验证域名和服务器是否属于你。为了能通过验证，我们必须配置服务器以便能访问到隐藏的目录(.well-known/acme-challenge)。下面是nginx的配置的例子：
 location /.well-known/acme-challenge { default_type &amp;#34;text/plain&amp;#34;; root /var/www/example/; } 其实 -w 可以为任意目录，但是必须保证Let’s Encrypt 通过发送HTTP请求去验证的时候能访问到该目录。</description>
     </item>
-    
     
   </channel>
 </rss>

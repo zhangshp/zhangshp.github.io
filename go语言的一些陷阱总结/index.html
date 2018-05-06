@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.40.2" />
+
+
+<title>Go语言的一些陷阱总结 - zhangsp&#39;s blog</title>
+<meta property="og:title" content="Go语言的一些陷阱总结 - zhangsp&#39;s blog">
+
+
+
+  
+
+
+
+
+
+
+<link rel="stylesheet" href="https://zhangshp.github.io/css/main.css" media="all">
+<link rel="stylesheet" href="https://zhangshp.github.io/css/fonts.css">
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://zhangshp.github.io/" class="nav-logo">
+    <img src="https://zhangshp.github.io/images/logo.png" 
+         width="50" 
+         height="50" 
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/categories">Categories</a></li>
+    
+    <li><a href="/tags">Tags</a></li>
+    
+    <li><a href="/about/">About</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+  <article class="article">
+    <h1 class="article-title">Go语言的一些陷阱总结</h1>
+    
+    <span class="article-date">2018-05-04</span>
+    
+
+    <div class="article-content">
+      
+
+<h3 id="给空map赋值">给空map赋值</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">var</span> m <span style="color:#6ab825;font-weight:bold">map</span>[<span style="color:#6ab825;font-weight:bold">string</span>]<span style="color:#6ab825;font-weight:bold">int</span>
+m[<span style="color:#ed9d13">&#34;1&#34;</span>] = <span style="color:#3677a9">1</span> //panic: assignment to entry in <span style="color:#6ab825;font-weight:bold">nil</span> <span style="color:#6ab825;font-weight:bold">map</span> </code></pre></div>
+<p>在给 <code>map</code> 添加元素 之前必须使用 <code>make</code> 初始化</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">m := <span style="color:#24909d">make</span>(<span style="color:#6ab825;font-weight:bold">map</span>[<span style="color:#6ab825;font-weight:bold">string</span>]<span style="color:#6ab825;font-weight:bold">int</span>)
+m[<span style="color:#ed9d13">&#34;1&#34;</span>] = <span style="color:#3677a9">1</span></code></pre></div>
+<h3 id="nil-pointer-dereference">Nil pointer dereference</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">type</span> Point <span style="color:#6ab825;font-weight:bold">struct</span> {
+    X, Y <span style="color:#6ab825;font-weight:bold">float64</span>
+}
+
+<span style="color:#6ab825;font-weight:bold">func</span> (p *Point) Abs() <span style="color:#6ab825;font-weight:bold">float64</span> {
+    <span style="color:#6ab825;font-weight:bold">return</span> math.Sqrt(p.X*p.X + p.Y*p.Y)
+}
+
+<span style="color:#6ab825;font-weight:bold">func</span> main() {
+    <span style="color:#6ab825;font-weight:bold">var</span> p *Point
+    fmt.Println(p.Abs())<span style="color:#999;font-style:italic">//panic: runtime error: invalid memory address or nil pointer dereference
+</span><span style="color:#999;font-style:italic"></span>}</code></pre></div>
+<p>未初始化的指针为nil，它的地址是非法的，要使用指针，必须保证其不为nil。可以修改为下面的：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">func</span> main(){
+    p = <span style="color:#24909d">new</span>(Point)
+    fmt.Println(p.Abs())
+}</code></pre></div>
+<p>或者改为：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">func</span> main(){
+    <span style="color:#6ab825;font-weight:bold">var</span> p Point
+    fmt.Println(p.Abs())
+}</code></pre></div>
+<h3 id="一个方法返回多个值-接受变量只有一个">一个方法返回多个值，接受变量只有一个</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">t := time.Parse(<span style="color:#ed9d13">&#34;2016-01-02&#34;</span>, <span style="color:#ed9d13">&#34;2012-12-12&#34;</span>)
+fmt.Println(t)//multiple-value time.Parse() in single-value context</code></pre></div>
+<p><code>time.Parse</code> 返回两个值，一个<code>time.Time</code> 一个<code>error</code> ，必须用两个变量接收，或者用 <code>_</code> 空白符忽略。</p>
+
+<h3 id="数组是值类型">数组是值类型</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">func</span> Foo(a [<span style="color:#3677a9">2</span>]<span style="color:#6ab825;font-weight:bold">int</span>) {
+    a[<span style="color:#3677a9">0</span>] = <span style="color:#3677a9">8</span>
+}
+
+<span style="color:#6ab825;font-weight:bold">func</span> main() {
+    a := [<span style="color:#3677a9">2</span>]<span style="color:#6ab825;font-weight:bold">int</span>{<span style="color:#3677a9">1</span>, <span style="color:#3677a9">2</span>}
+    Foo(a)         
+    fmt.Println(a) <span style="color:#999;font-style:italic">// [1 2]
+</span><span style="color:#999;font-style:italic"></span>}</code></pre></div>
+<p>数组在Go语言里是值类型，如果你传递数组给一个方法，传递过去的是这个数组的copy。如果你想更新数组里的值，可以用slice代替。</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">func</span> Foo(a []<span style="color:#6ab825;font-weight:bold">int</span>) {
+    <span style="color:#6ab825;font-weight:bold">if</span> <span style="color:#24909d">len</span>(a) &gt; <span style="color:#3677a9">0</span> {
+        a[<span style="color:#3677a9">0</span>] = <span style="color:#3677a9">8</span>
+    }
+}
+
+<span style="color:#6ab825;font-weight:bold">func</span> main() {
+    a := []<span style="color:#6ab825;font-weight:bold">int</span>{<span style="color:#3677a9">1</span>, <span style="color:#3677a9">2</span>}
+    Foo(a)         
+    fmt.Println(a) <span style="color:#999;font-style:italic">// [8 2]
+</span><span style="color:#999;font-style:italic"></span>}</code></pre></div>
+<p>slice不会存真实的数据，它只是个数据头，包含长度位置信息以及对底层数组的引用。如果修改slice中的元素，则对应的数组元素就会修改，其他共用这个底层数组的slice就会跟着改变。</p>
+
+<h3 id="同名变量">同名变量</h3>
+
+<pre><code>func main(){
+    i := 0
+    if true{
+        i := 2
+        i++
+    }
+    fmt.Println(i)// 0
+}
+</code></pre>
+
+<p><code>i := 2</code> 声明了一个新的变量 ，它在 <code>if</code> 块作用域里覆盖了外部的<code>i</code>,所以改变新声明的<code>i</code>不会改变外部的变量<code>i</code></p>
+
+<h3 id="string是不可变的">String是不可变的</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">s := <span style="color:#ed9d13">&#34;hello&#34;</span>
+s[<span style="color:#3677a9">0</span>] = <span style="color:#ed9d13">&#39;H&#39;</span> <span style="color:#999;font-style:italic">// cannot assign to s[0]
+</span><span style="color:#999;font-style:italic"></span>fmt.Println(s)</code></pre></div>
+<p>如果想改变字符串可以通过rune slice</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">s := <span style="color:#ed9d13">&#34;hello&#34;</span>
+sr := []<span style="color:#24909d">rune</span>(s)
+sr[<span style="color:#3677a9">0</span>] = <span style="color:#ed9d13">&#39;H&#39;</span>
+fmt.Println(<span style="color:#24909d">string</span>(sr))</code></pre></div>
+<h3 id="strings-trimright">strings.TrimRight</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">fmt.Println(strings.TrimRight(<span style="color:#ed9d13">&#34;ABBA&#34;</span>, <span style="color:#ed9d13">&#34;BA&#34;</span>)) // <span style="color:#ed9d13">&#34;&#34;</span></code></pre></div>
+<p> <code>Trim</code>, <code>TrimLeft</code> 和 <code>TrimRight</code> 会把所有包含在<strong>cutset</strong> 的Unicode code points 移除，如果只是去除尾部的string可以使用<a href="https://golang.org/pkg/strings/#TrimSuffix"><code>strings.TrimSuffix</code></a>.</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">fmt.Println(strings.TrimSuffix(<span style="color:#ed9d13">&#34;ABBA&#34;</span>, <span style="color:#ed9d13">&#34;BA&#34;</span>)) // <span style="color:#ed9d13">&#34;AB&#34;</span></code></pre></div>
+<h3 id="copy">copy</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">var</span> src, dst []<span style="color:#6ab825;font-weight:bold">int</span>
+src = []<span style="color:#6ab825;font-weight:bold">int</span>{<span style="color:#3677a9">1</span>, <span style="color:#3677a9">2</span>, <span style="color:#3677a9">3</span>}
+<span style="color:#24909d">copy</span>(dst, src)
+fmt.Println(<span style="color:#ed9d13">&#34;dst:&#34;</span>, dst) // dst []</code></pre></div>
+<p><code>copy</code> 只会复制两个slice中长度最小的个数的元素，因为src的长度为0所以没有复制任何元素，可以修改为：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">var</span> src, dst []<span style="color:#6ab825;font-weight:bold">int</span>
+src = []<span style="color:#6ab825;font-weight:bold">int</span>{<span style="color:#3677a9">1</span>, <span style="color:#3677a9">2</span>, <span style="color:#3677a9">3</span>}
+dst = <span style="color:#24909d">make</span>([]<span style="color:#6ab825;font-weight:bold">int</span>,<span style="color:#24909d">len</span>(src))
+<span style="color:#24909d">copy</span>(dst, src)
+fmt.Println(<span style="color:#ed9d13">&#34;dst:&#34;</span>, dst) // dst: [<span style="color:#3677a9">1</span> <span style="color:#3677a9">2</span> <span style="color:#3677a9">3</span>]</code></pre></div>
+<h3 id="append">append</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">a := []<span style="color:#24909d">byte</span>(<span style="color:#ed9d13">&#34;ba&#34;</span>)
+
+a1 := <span style="color:#24909d">append</span>(a, <span style="color:#ed9d13">&#39;d&#39;</span>)
+a2 := <span style="color:#24909d">append</span>(a, <span style="color:#ed9d13">&#39;g&#39;</span>)
+
+fmt.Println(<span style="color:#24909d">string</span>(a1)) <span style="color:#999;font-style:italic">// bag
+</span><span style="color:#999;font-style:italic"></span>fmt.Println(<span style="color:#24909d">string</span>(a2)) // bag</code></pre></div>
+<p>如果slice引用的底层数组有足够的空间，append将会复用底层数组</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">a := []<span style="color:#24909d">byte</span>(<span style="color:#ed9d13">&#34;ba&#34;</span>)
+fmt.Println(<span style="color:#24909d">len</span>(a), <span style="color:#24909d">cap</span>(a)) // <span style="color:#3677a9">2</span> <span style="color:#3677a9">32</span></code></pre></div>
+<p>这意味着 slice a, a1, a2 引用同一个底层数组，为了避免这个我们修改为：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">const</span> prefix = <span style="color:#ed9d13">&#34;ba&#34;</span>
+
+a1 := <span style="color:#24909d">append</span>([]<span style="color:#24909d">byte</span>(prefix), <span style="color:#ed9d13">&#39;d&#39;</span>)
+a2 := <span style="color:#24909d">append</span>([]<span style="color:#24909d">byte</span>(prefix), <span style="color:#ed9d13">&#39;g&#39;</span>)
+
+fmt.Println(<span style="color:#24909d">string</span>(a1)) <span style="color:#999;font-style:italic">// bad
+</span><span style="color:#999;font-style:italic"></span>fmt.Println(<span style="color:#24909d">string</span>(a2)) // bag</code></pre></div>
+<h3 id="以0开头的数字">以0开头的数字</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">num1 := <span style="color:#3677a9">010</span>
+num2 := <span style="color:#3677a9">10</span>
+fmt.Println(num1 + num2) // <span style="color:#3677a9">18</span></code></pre></div>
+<p>010是八进制的数字，代表着8而不是10</p>
+
+<table>
+<thead>
+<tr>
+<th align="left">字面</th>
+<th align="center">进制</th>
+<th align="right">注意</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="left">020</td>
+<td align="center">8</td>
+<td align="right">以0开头</td>
+</tr>
+
+<tr>
+<td align="left">16</td>
+<td align="center">10</td>
+<td align="right">不以0开头</td>
+</tr>
+
+<tr>
+<td align="left">0x10</td>
+<td align="center">16</td>
+<td align="right">以0x开头</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="在range-循环中无法改变值">在range 循环中无法改变值</h3>
+
+<pre><code>s := []int{1, 1, 1}
+for _, n := range s {
+	n += 1
+}
+fmt.Println(s) // [1 1 1]
+</code></pre>
+
+<p>range循环复制slice里面的元素到n,更新n不会影响到slice，如果要想改变slice可以改为：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">s := []<span style="color:#6ab825;font-weight:bold">int</span>{<span style="color:#3677a9">1</span>, <span style="color:#3677a9">1</span>, <span style="color:#3677a9">1</span>}
+<span style="color:#6ab825;font-weight:bold">for</span> i, n := <span style="color:#6ab825;font-weight:bold">range</span> s {
+	s[i] = n + <span style="color:#3677a9">1</span>
+}
+fmt.Println(s) // [<span style="color:#3677a9">2</span> <span style="color:#3677a9">2</span> <span style="color:#3677a9">2</span>]</code></pre></div>
+<h3 id="遍历的变量在range循环中看不到改变">遍历的变量在range循环中看不到改变</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">var</span> a [<span style="color:#3677a9">2</span>]<span style="color:#6ab825;font-weight:bold">int</span>
+<span style="color:#6ab825;font-weight:bold">for</span> _, x := <span style="color:#6ab825;font-weight:bold">range</span> a {
+	fmt.Println(<span style="color:#ed9d13">&#34;x =&#34;</span>, x)
+	a[<span style="color:#3677a9">1</span>] = <span style="color:#3677a9">8</span>
+}
+fmt.Println(<span style="color:#ed9d13">&#34;a =&#34;</span>, a)</code></pre></div>
+<p>输出：</p>
+
+<pre><code>x = 0
+x = 0
+a = [0 8]
+</code></pre>
+
+<p><code>range  a</code> 在循环之前只计算一次，并且复制一份a (在这里a是数组) 用来生成遍历对象的值。</p>
+
+<p>为了避免数组的copy，用slice代替数组</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">var</span> a [<span style="color:#3677a9">2</span>]<span style="color:#6ab825;font-weight:bold">int</span>
+<span style="color:#6ab825;font-weight:bold">for</span> _, x := <span style="color:#6ab825;font-weight:bold">range</span> a[:] {
+	fmt.Println(<span style="color:#ed9d13">&#34;x =&#34;</span>, x)
+	a[<span style="color:#3677a9">1</span>] = <span style="color:#3677a9">8</span>
+}
+fmt.Println(<span style="color:#ed9d13">&#34;a =&#34;</span>, a)</code></pre></div>
+<p>输出：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go">x = <span style="color:#3677a9">0</span>
+x = <span style="color:#3677a9">8</span>
+a = [<span style="color:#3677a9">0</span> <span style="color:#3677a9">8</span>]</code></pre></div>
+<h3 id="遍历对象与闭包">遍历对象与闭包</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">var</span> wg sync.WaitGroup
+wg.Add(<span style="color:#3677a9">5</span>)
+<span style="color:#6ab825;font-weight:bold">for</span> i := <span style="color:#3677a9">0</span>; i &lt; <span style="color:#3677a9">5</span>; i++ {
+	<span style="color:#6ab825;font-weight:bold">go</span> <span style="color:#6ab825;font-weight:bold">func</span>() {
+		fmt.Print(i)
+		wg.Done()
+	}()
+}
+wg.Wait()
+fmt.Println(<span style="color:#ed9d13">&#34;done&#34;</span>)</code></pre></div>
+<p>输出：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#3677a9">55555</span>done</code></pre></div>
+<p>为避免出现这种情况，我们可以改为：</p>
+
+<pre><code>var wg sync.WaitGroup
+wg.Add(5)
+for i := 0; i &lt; 5; i++ {
+	go func(i int) {
+		fmt.Print(i)
+		wg.Done()
+	}(i)
+}
+wg.Wait()
+fmt.Println(&quot;done&quot;)
+</code></pre>
+
+<p>输出</p>
+
+<pre><code>04123done
+</code></pre>
+
+<p>也可以改为：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">var</span> wg sync.WaitGroup
+wg.Add(<span style="color:#3677a9">5</span>)
+<span style="color:#6ab825;font-weight:bold">for</span> i := <span style="color:#3677a9">0</span>; i &lt; <span style="color:#3677a9">5</span>; i++ {
+	n := i
+	<span style="color:#6ab825;font-weight:bold">go</span> <span style="color:#6ab825;font-weight:bold">func</span>() {
+		fmt.Print(n)
+		wg.Done()
+	}()
+}
+wg.Wait()
+fmt.Println(<span style="color:#ed9d13">&#34;done&#34;</span>)</code></pre></div>
+<p>输出</p>
+
+<pre><code>14230done
+</code></pre>
+
+<h3 id="空interface不等于nil">空interface不等于nil</h3>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">func</span> Foo() <span style="color:#6ab825;font-weight:bold">error</span> {
+    <span style="color:#6ab825;font-weight:bold">var</span> err *os.PathError = <span style="color:#6ab825;font-weight:bold">nil</span>
+    <span style="color:#999;font-style:italic">// …
+</span><span style="color:#999;font-style:italic"></span>    <span style="color:#6ab825;font-weight:bold">return</span> err
+}
+
+<span style="color:#6ab825;font-weight:bold">func</span> main() {
+    err := Foo()
+    fmt.Println(err)        <span style="color:#999;font-style:italic">// &lt;nil&gt;
+</span><span style="color:#999;font-style:italic"></span>    fmt.Println(err == <span style="color:#6ab825;font-weight:bold">nil</span>) <span style="color:#999;font-style:italic">// false
+</span><span style="color:#999;font-style:italic"></span>}</code></pre></div>
+<p>interface在内部由两部分构成：value 与 type， 只有两者都为nil的时候才等于nil。Foo方法返回的是[nil, *os.PathError]，所以与[nil, nil]不相等</p>
+
+    </div>
+ 
+    <ul class="article-taxonomy">
+                  
+      <hr>
+      <li>
+        <i class="fa fa-category"></i><a href="/categories/go">Go</a>
+      </li>
+      
+    
+      
+  </article>
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="https://zhangshp.github.io/index.xml" type="application/rss+xml" target="_blank"><i class="fa fa-rss"></i> RSS feed</a>
+          </li>
+          <li>
+            <a href="https://github.com/zhangshp"><i class="fa fa-github"></i> Code</a>
+          </li>
+          <li>
+            <a href="https://zhangshp.github.io/site-notice">Site notice</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+  </body>
+</html>
+
