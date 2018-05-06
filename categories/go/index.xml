@@ -18,7 +18,7 @@
       
       <guid>https://zhangshp.github.io/go%E8%AF%AD%E8%A8%80%E7%9A%84%E4%B8%80%E4%BA%9B%E9%99%B7%E9%98%B1%E6%80%BB%E7%BB%93/</guid>
       <description>给空map赋值 var m map[string]int m[&amp;#34;1&amp;#34;] = 1 //panic: assignment to entry in nil map  在给 map 添加元素 之前必须使用 make 初始化
-m := make(map[string]int) m[&amp;#34;1&amp;#34;] = 1 Nil pointer dereference type Point struct { X, Y float64 } func (p *Point) Abs() float64 { return math.Sqrt(p.X*p.X + p.Y*p.Y) } func main() { var p *Point fmt.Println(p.Abs())//panic: runtime error: invalid memory address or nil pointer dereference } 未初始化的指针为nil，它的地址是非法的，要使用指针，必须保证其不为nil。可以修改为下面的：
+m := make(map[string]int) m[&amp;#34;1&amp;#34;] = 1 未初始化的指针 type Point struct { X, Y float64 } func (p *Point) Abs() float64 { return math.Sqrt(p.X*p.X + p.Y*p.Y) } func main() { var p *Point fmt.Println(p.Abs())//panic: runtime error: invalid memory address or nil pointer dereference } 未初始化的指针为nil，它的地址是非法的，要使用指针，必须保证其不为nil。可以修改为下面的：
 func main(){ p = new(Point) fmt.</description>
     </item>
     
