@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JS on zhangsp&#39;s blog</title>
+    <link>https://zhangshp.github.io/categories/js/</link>
+    <description>Recent content in JS on zhangsp&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 15 May 2018 08:51:55 +0800</lastBuildDate>
+    
+	<atom:link href="https://zhangshp.github.io/categories/js/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Fetch API入门</title>
+      <link>https://zhangshp.github.io/fetch-api%E5%85%A5%E9%97%A8/</link>
+      <pubDate>Tue, 15 May 2018 08:51:55 +0800</pubDate>
+      
+      <guid>https://zhangshp.github.io/fetch-api%E5%85%A5%E9%97%A8/</guid>
+      <description>近几年 XMLHttpRequest 已经成为 web 开发者的得力助手，然而最近 XMLHttpRequest 正在慢慢的被 Fetch API 替代。两者都可以发送网络请求，但是 Fetch API 是基于Promise的，Promise 可以减少回调函数，使代码更清晰易读。
+Fetch API Fetch API 提供了定义在 window 对象上的 fetch() 方法，该方法可以用来实现发送请求。fetch() 返回一个 response 的Promise。
+fetch 方法只有一个 URL 强制参数，下面是一个最基础的例子：
+fetch(&amp;#39;https://www.reddit.com/r/javascript/top/.json?limit=5&amp;#39;) .then(res =&amp;gt; console.log(res));  把上面的代码复制到浏览器的控制台，你会看到下面的结果：
+fetch(&amp;#39;https://www.reddit.com/r/javascript/top/.json?limit=5&amp;#39;) .then(res =&amp;gt; console.log(res)); Promise {&amp;lt;pending&amp;gt;} __proto__: Promise [[PromiseStatus]]: &amp;#34;resolved&amp;#34; [[PromiseValue]]: undefined VM846:2 Response {type: &amp;#34;cors&amp;#34;, url: &amp;#34;https://www.reddit.com/r/javascript/top/.json?limit=5&amp;#34;, redirected: false, status: 200, ok: true, …} body: (...) bodyUsed: false headers: Headers {} ok: true redirected: false status: 200 statusText: &amp;#34;&amp;#34; type: &amp;#34;cors&amp;#34; url: &amp;#34;https://www.</description>
+    </item>
+    
+  </channel>
+</rss>

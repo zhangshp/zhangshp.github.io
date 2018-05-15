@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.40.3" />
+
+
+<title>Fetch API入门 - zhangsp&#39;s blog</title>
+<meta property="og:title" content="Fetch API入门 - zhangsp&#39;s blog">
+
+
+
+  
+
+
+
+
+
+
+<link rel="stylesheet" href="https://zhangshp.github.io/css/main.css" media="all">
+<link rel="stylesheet" href="https://zhangshp.github.io/css/fonts.css">
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://zhangshp.github.io/" class="nav-logo">
+    <img src="https://zhangshp.github.io/images/logo.png" 
+         width="50" 
+         height="50" 
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/categories">Categories</a></li>
+    
+    <li><a href="/tags">Tags</a></li>
+    
+    <li><a href="/about/">About</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+  <article class="article">
+    <h1 class="article-title">Fetch API入门</h1>
+    
+    <span class="article-date">2018-05-15</span>
+    
+
+    <div class="article-content">
+      
+
+<p>近几年 <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest">XMLHttpRequest</a> 已经成为 web 开发者的得力助手，然而最近 <code>XMLHttpRequest</code> 正在慢慢的被 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">Fetch API</a> 替代。两者都可以发送网络请求，但是 Fetch API 是基于<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>的，Promise 可以减少回调函数，使代码更清晰易读。</p>
+
+<h4 id="fetch-api">Fetch API</h4>
+
+<p>Fetch API 提供了定义在 <code>window</code> 对象上的 <code>fetch()</code> 方法，该方法可以用来实现发送请求。<code>fetch()</code> 返回一个 <code>response</code> 的Promise。</p>
+
+<p><code>fetch</code> 方法只有一个 URL 强制参数，下面是一个最基础的例子：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">fetch(<span style="color:#ed9d13">&#39;https://www.reddit.com/r/javascript/top/.json?limit=5&#39;</span>)
+.then(res =&gt; console.log(res));
+</code></pre></div>
+<p>把上面的代码复制到浏览器的控制台，你会看到下面的结果：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">fetch(<span style="color:#ed9d13">&#39;https://www.reddit.com/r/javascript/top/.json?limit=5&#39;</span>)
+.then(res =&gt; console.log(res));
+<span style="color:#24909d">Promise</span> {&lt;pending&gt;}
+__proto__: <span style="color:#24909d">Promise</span>
+[[PromiseStatus]]: <span style="color:#ed9d13">&#34;resolved&#34;</span>
+[[PromiseValue]]: <span style="color:#6ab825;font-weight:bold">undefined</span>
+VM846:<span style="color:#3677a9">2</span> 
+Response {type: <span style="color:#ed9d13">&#34;cors&#34;</span>, url: <span style="color:#ed9d13">&#34;https://www.reddit.com/r/javascript/top/.json?limit=5&#34;</span>, redirected: <span style="color:#6ab825;font-weight:bold">false</span>, status: <span style="color:#3677a9">200</span>, ok: <span style="color:#6ab825;font-weight:bold">true</span>, <span style="color:#a61717;background-color:#e3d2d2">…</span>}
+body: (...)
+bodyUsed: <span style="color:#6ab825;font-weight:bold">false</span>
+headers: Headers {}
+ok: <span style="color:#6ab825;font-weight:bold">true</span>
+redirected: <span style="color:#6ab825;font-weight:bold">false</span>
+status: <span style="color:#3677a9">200</span>
+statusText: <span style="color:#ed9d13">&#34;&#34;</span>
+type: <span style="color:#ed9d13">&#34;cors&#34;</span>
+url: <span style="color:#ed9d13">&#34;https://www.reddit.com/r/javascript/top/.json?limit=5&#34;</span>
+__proto__: Response
+</code></pre></div>
+<h4 id="获取json">获取JSON</h4>
+
+<p>在请求完成之前我们不能阻塞用户界面，这就是为什么<code>fecth()</code>返回 <code>Promise</code>的原因。我们用 <code>then</code> 方法等待服务器的返回，并且将结果打印到控制台。现在我们来看一下当请求完成时如何从response里取出 JSON数据：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">fetch(<span style="color:#ed9d13">&#39;https://www.reddit.com/r/javascript/top/.json?limit=5&#39;</span>)
+.then(res =&gt; res.json())
+.then(json =&gt; console.log(json));
+</code></pre></div>
+<p>我们通过调用 <code>fetch</code> 方法发起请求，当请求完成时 promise 返回 <code>Response</code> 对象，该对象暴露了一个 <code>json</code>方法。在第一个 <code>then()</code> 里我们可以调用 <code>json()</code> 方法用来将响应 体作为 JSON返回。</p>
+
+<p>然而 <code>json()</code> 方法同样返回一个 promise，因此在打印结果到控制台之前我们还需要链式调用另外的 <code>then（）</code> 方法。</p>
+
+<p>为什么 <code>json()</code>返回一个 promise呢？原因是 HTTP 允许我们以流的形式一块一块的返回内容到客户端，所以当浏览器接收到来自服务器的响应时，返回的内容有可能没有传输完毕。</p>
+
+<h4 id="错误处理">错误处理</h4>
+
+<p>当我们用 <code>fetch()</code> 向服务器请求一个不存在的资源或者访问这个资源需要授权时，我们必须处理程序级别的错误，比如 404。当接收到一个代表错误的 HTTP 状态码时，从 <code>fetch()</code>返回的 Promise <strong>不会被标记为 reject，</strong> 即使该 HTTP 响应的状态码是 404 或 500。相反，它会将 Promise 状态标记为 resolve （但是会将 resolve 的返回值的 <code>ok</code> 属性设置为 false ），仅当网络故障时或请求被阻止时，才会标记为 reject。我们上面的例子，<code>fetch()</code>  返回 <code>ok: true。</code>当 <code>response.ok</code>为 <code>true</code>的时候表示求情成功：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#6ab825;font-weight:bold">const</span> URL = <span style="color:#ed9d13">`http://httpstat.us/404`</span>; <span style="color:#999;font-style:italic">// Will return a 404
+</span><span style="color:#999;font-style:italic"></span>fetch(URL).then(<span style="color:#6ab825;font-weight:bold">function</span> (response) {
+    <span style="color:#6ab825;font-weight:bold">if</span> (response.ok) { <span style="color:#999;font-style:italic">// 成功
+</span><span style="color:#999;font-style:italic"></span>        <span style="color:#6ab825;font-weight:bold">return</span> response.json();
+    } <span style="color:#6ab825;font-weight:bold">else</span> { <span style="color:#999;font-style:italic">// 404，500...
+</span><span style="color:#999;font-style:italic"></span>        console.log(response.statusText);
+    }
+}).then(result =&gt; console.log(result))
+    .<span style="color:#6ab825;font-weight:bold">catch</span>(error =&gt; console.log(error)) <span style="color:#999;font-style:italic">// 网络故障时或请求被阻止
+</span><span style="color:#999;font-style:italic"></span></code></pre></div>
+<h4 id="发送带凭据的请求">发送带凭据的请求</h4>
+
+<p>默认情况下，<code>fetch</code> <strong>不会从服务端发送或接收任何 cookies</strong>, 如果站点依赖于用户 session，则会导致未经认证的请求（要发送 cookies，必须设置 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/GlobalFetch/fetch#%E5%8F%82%E6%95%B0">credentials</a> 选项）</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">fetch(<span style="color:#ed9d13">&#39;https://example.com&#39;</span>, {
+  credentials: <span style="color:#ed9d13">&#39;include&#39;</span>  
+})
+</code></pre></div>
+<p>如果你只想在请求URL与调用脚本位于同一起源处时发送凭据，请添加<code>credentials: 'same-origin'</code></p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">fetch(<span style="color:#ed9d13">&#39;https://example.com&#39;</span>, {
+  credentials: <span style="color:#ed9d13">&#39;same-origin&#39;</span>  
+})
+</code></pre></div>
+<p>要改为确保浏览器不在请求中包含凭据，请使用<code>credentials: 'omit'</code></p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">fetch(<span style="color:#ed9d13">&#39;https://example.com&#39;</span>, {
+  credentials: <span style="color:#ed9d13">&#39;omit&#39;</span>  
+})
+</code></pre></div>
+<h4 id="改变请求方法和请求头">改变请求方法和请求头</h4>
+
+<p>POST JSON：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#999;font-style:italic">// Example POST method implementation:
+</span><span style="color:#999;font-style:italic"></span>
+postData(<span style="color:#ed9d13">&#39;http://example.com/answer&#39;</span>, {answer: <span style="color:#3677a9">42</span>})
+  .then(data =&gt; console.log(data)) <span style="color:#999;font-style:italic">// JSON from `response.json()` call
+</span><span style="color:#999;font-style:italic"></span>  .<span style="color:#6ab825;font-weight:bold">catch</span>(error =&gt; console.error(error))
+
+<span style="color:#6ab825;font-weight:bold">function</span> postData(url, data) {
+  <span style="color:#999;font-style:italic">// Default options are marked with *
+</span><span style="color:#999;font-style:italic"></span>  <span style="color:#6ab825;font-weight:bold">return</span> fetch(url, {
+    body: JSON.stringify(data), <span style="color:#999;font-style:italic">// 必须匹配 &#39;Content-Type&#39; 头
+</span><span style="color:#999;font-style:italic"></span>    cache: <span style="color:#ed9d13">&#39;no-cache&#39;</span>, <span style="color:#999;font-style:italic">// *default, no-cache, reload, force-cache, only-if-cached
+</span><span style="color:#999;font-style:italic"></span>    credentials: <span style="color:#ed9d13">&#39;same-origin&#39;</span>, <span style="color:#999;font-style:italic">// include, same-origin, *omit
+</span><span style="color:#999;font-style:italic"></span>    headers: {
+      <span style="color:#ed9d13">&#39;user-agent&#39;</span>: <span style="color:#ed9d13">&#39;Mozilla/4.0 MDN Example&#39;</span>,
+      <span style="color:#ed9d13">&#39;content-type&#39;</span>: <span style="color:#ed9d13">&#39;application/json&#39;</span>
+    },
+    method: <span style="color:#ed9d13">&#39;POST&#39;</span>, <span style="color:#999;font-style:italic">// *GET, POST, PUT, DELETE, etc.
+</span><span style="color:#999;font-style:italic"></span>    mode: <span style="color:#ed9d13">&#39;cors&#39;</span>, <span style="color:#999;font-style:italic">// no-cors, cors, *same-origin
+</span><span style="color:#999;font-style:italic"></span>    redirect: <span style="color:#ed9d13">&#39;follow&#39;</span>, <span style="color:#999;font-style:italic">// manual, *follow, error
+</span><span style="color:#999;font-style:italic"></span>    referrer: <span style="color:#ed9d13">&#39;no-referrer&#39;</span>, <span style="color:#999;font-style:italic">// *client, no-referrer
+</span><span style="color:#999;font-style:italic"></span>  })
+  .then(response =&gt; response.json()) <span style="color:#999;font-style:italic">// parses response to JSON
+</span><span style="color:#999;font-style:italic"></span>}
+</code></pre></div>
+<p>自定义请求头方法1：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#6ab825;font-weight:bold">var</span> content = <span style="color:#ed9d13">&#34;Hello World&#34;</span>;
+<span style="color:#6ab825;font-weight:bold">var</span> myHeaders = <span style="color:#6ab825;font-weight:bold">new</span> Headers();
+myHeaders.append(<span style="color:#ed9d13">&#34;Content-Type&#34;</span>, <span style="color:#ed9d13">&#34;text/plain&#34;</span>);
+myHeaders.append(<span style="color:#ed9d13">&#34;Content-Length&#34;</span>, content.length.toString());
+myHeaders.append(<span style="color:#ed9d13">&#34;X-Custom-Header&#34;</span>, <span style="color:#ed9d13">&#34;ProcessThisImmediately&#34;</span>);
+</code></pre></div>
+<p>自定义请求头方法2：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">myHeaders = <span style="color:#6ab825;font-weight:bold">new</span> Headers({
+  <span style="color:#ed9d13">&#34;Content-Type&#34;</span>: <span style="color:#ed9d13">&#34;text/plain&#34;</span>,
+  <span style="color:#ed9d13">&#34;Content-Length&#34;</span>: content.length.toString(),
+  <span style="color:#ed9d13">&#34;X-Custom-Header&#34;</span>: <span style="color:#ed9d13">&#34;ProcessThisImmediately&#34;</span>,
+});
+</code></pre></div>
+<p>获取请求头：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">console.log(myHeaders.has(<span style="color:#ed9d13">&#34;Content-Type&#34;</span>)); <span style="color:#999;font-style:italic">// true
+</span><span style="color:#999;font-style:italic"></span>console.log(myHeaders.has(<span style="color:#ed9d13">&#34;Set-Cookie&#34;</span>)); <span style="color:#999;font-style:italic">// false
+</span><span style="color:#999;font-style:italic"></span>myHeaders.set(<span style="color:#ed9d13">&#34;Content-Type&#34;</span>, <span style="color:#ed9d13">&#34;text/html&#34;</span>);
+myHeaders.append(<span style="color:#ed9d13">&#34;X-Custom-Header&#34;</span>, <span style="color:#ed9d13">&#34;AnotherValue&#34;</span>);
+ 
+console.log(myHeaders.get(<span style="color:#ed9d13">&#34;Content-Length&#34;</span>)); <span style="color:#999;font-style:italic">// 11
+</span><span style="color:#999;font-style:italic"></span>console.log(myHeaders.get(<span style="color:#ed9d13">&#34;X-Custom-Header&#34;</span>)); <span style="color:#999;font-style:italic">// [&#34;ProcessThisImmediately&#34;, &#34;AnotherValue&#34;]
+</span><span style="color:#999;font-style:italic"></span> 
+myHeaders.<span style="color:#6ab825;font-weight:bold">delete</span>(<span style="color:#ed9d13">&#34;X-Custom-Header&#34;</span>);
+console.log(myHeaders.get(<span style="color:#ed9d13">&#34;X-Custom-Header&#34;</span>)); <span style="color:#999;font-style:italic">// [ ]
+</span><span style="color:#999;font-style:italic"></span></code></pre></div>
+<blockquote>
+<p>参考：</p>
+
+<p><em><a href="https://www.sitepoint.com/introduction-to-the-fetch-api/">https://www.sitepoint.com/introduction-to-the-fetch-api/</a></em></p>
+
+<p><em><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch">https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch</a></em></p>
+</blockquote>
+
+    </div>
+ 
+    <ul class="article-taxonomy">
+                  
+      <hr>
+      <li>
+        <i class="fa fa-category"></i><a href="/categories/js">JS</a>
+      </li>
+      
+    
+      
+  </article>
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="https://zhangshp.github.io/index.xml" type="application/rss+xml" target="_blank"><i class="fa fa-rss"></i> RSS feed</a>
+          </li>
+          <li>
+            <a href="https://github.com/zhangshp"><i class="fa fa-github"></i> Code</a>
+          </li>
+          <li>
+            <a href="https://zhangshp.github.io/site-notice">Site notice</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+  </body>
+</html>
+
