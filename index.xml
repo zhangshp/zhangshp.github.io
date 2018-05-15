@@ -50,7 +50,7 @@ func main(){ p = new(Point) fmt.</description>
 Certbot是一款易用的自动获取和部署SSL/TLS证书的工具。Certbot由EFF开发，被称为 Let’s Encrypt 官方客户端。我们获取免费证书的工具就是Certbot。
 安装Certbot 推荐上Certbot 官网安装，如果没有找到相对应的操作系统和服务器软件则执行下面命令安装：
 wget https://dl.eff.org/certbot-auto chmod a+x certbot-auto Ubuntu 16及更高版本如果出现setuptools pkg_resources pip wheel failed with error code 1 错误，请执行以下命令：
-sudo apt-get install letsencrypt export LC_ALL=&amp;#34;en_US.UTF-8&amp;#34; export LC_CTYPE=&amp;#34;en_US.UTF-8&amp;#34; Certbot两种模式以及证书配置  Webroot  如果我们有权限修改服务器上的文件，并且不希望在证书获取过程中停止服务器的话可以使用Webroot模式。
+sudo apt-get install letsencrypt export LC_ALL=&amp;#34;en_US.UTF-8&amp;#34; export LC_CTYPE=&amp;#34;en_US.UTF-8&amp;#34; Certbot两种模式以及证书配置 Certbot三种模式以及证书配置 2018-05-15更新  Webroot  如果我们有权限修改服务器上的文件，并且不希望在证书获取过程中停止服务器的话可以使用Webroot模式。
 certbot certonly --webroot -w /var/www/example -d www.example.com --webroot 指定Webroot模式
 -w 指定网站根目录(webroot-path)
 -d 指定域名

@@ -72,7 +72,9 @@ chmod a+x certbot-auto</code></pre></div>
 <div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">sudo apt-get install letsencrypt
 <span style="color:#24909d">export</span> <span style="color:#40ffff">LC_ALL</span>=<span style="color:#ed9d13">&#34;en_US.UTF-8&#34;</span>
 <span style="color:#24909d">export</span> <span style="color:#40ffff">LC_CTYPE</span>=<span style="color:#ed9d13">&#34;en_US.UTF-8&#34;</span></code></pre></div>
-<h4 id="certbot两种模式以及证书配置">Certbot两种模式以及证书配置</h4>
+<h4 id="certbot两种模式以及证书配置"><del>Certbot两种模式以及证书配置</del></h4>
+
+<h4 id="certbot三种模式以及证书配置-2018-05-15更新">Certbot三种模式以及证书配置 <em>2018-05-15更新</em></h4>
 
 <ul>
 <li>Webroot</li>
@@ -103,6 +105,37 @@ chmod a+x certbot-auto</code></pre></div>
 
 <p><code>-d</code> 指定域名</p>
 
+<ul>
+<li>DNS</li>
+</ul>
+
+<p>DNS模式支持泛域名证书，泛域名证书比单域名证书正好维护，下面是命令：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  certbot certonly --manual -d *.occall.com --preferred-challenges dns --server https://acme-v02.api.letsencrypt.org/directory</code></pre></div>
+<p><code>--manual</code>：手动模式</p>
+
+<p><code>-d</code> : 域名</p>
+
+<p><code>--preferred-challenges dns</code> :  选择DNS</p>
+
+<p><code>--server</code> : 指定 ACME 服务器，因为默认的目前不支持DNS获取泛域名</p>
+
+<p>等到下面这一步：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  Please deploy a DNS TXT record under the name
+  _acme-challenge.xxx.com with the following value:
+  
+  dFPRIxj_H1PyjK_xjz6cFKK-jJEi4M7TCE2goXboSZ4
+  
+  Before continuing, verify the record is deployed.</code></pre></div>
+<p>登陆你的域名管理网站，添加 TXT记录，下面以cloudxns为例：</p>
+
+<p><code>_acme-challenge</code>:记录名称</p>
+
+<p><code>dFPRIxj_H1PyjK_xjz6cFKK-jJEi4M7TCE2goXboSZ4</code>:记录的value</p>
+
+<p><img src="/images/dns.jpeg" alt="image-20180515135547029" /></p>
+
+<p>该记录生效后按回车就会生成证书</p>
+
 <p>生成的证书位置在<code>/etc/letsencrypt/live</code> 下面。nginx配置例子：</p>
 <div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nginx" data-lang="nginx"><span style="color:#6ab825;font-weight:bold">ssl_certificate</span>      <span style="color:#ed9d13">/etc/letsencrypt/live/www.example.com/fullchain.pem</span>;
 <span style="color:#6ab825;font-weight:bold">ssl_certificate_key</span>  <span style="color:#ed9d13">/etc/letsencrypt/live/www.example.com/privkey.pem</span>;</code></pre></div>
@@ -114,7 +147,7 @@ chmod a+x certbot-auto</code></pre></div>
 
 <p>我们还可以通过 cron job 来定时更新我们的证书，下面是一个每天凌晨和中午检查更新我们的证书例子：</p>
 <div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#3677a9">0</span> <span style="color:#3677a9">0</span>,12 * * * certbot renew </code></pre></div>
-<p><strong>注意，如果你用的 Webroot 模式，更新证书后记得重启下服务器。</strong></p>
+<p><strong>注意，如果你用的 Webroot与 DNS模式，更新证书后记得重启下服务器。</strong></p>
 
     </div>
  
