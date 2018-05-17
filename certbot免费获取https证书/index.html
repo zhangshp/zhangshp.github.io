@@ -110,7 +110,7 @@ chmod a+x certbot-auto</code></pre></div>
 </ul>
 
 <p>DNS模式支持泛域名证书，泛域名证书比单域名证书正好维护，下面是命令：</p>
-<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  certbot certonly --manual -d *.occall.com --preferred-challenges dns --server https://acme-v02.api.letsencrypt.org/directory</code></pre></div>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">  certbot certonly --manual -d *.example.com --preferred-challenges dns --server https://acme-v02.api.letsencrypt.org/directory</code></pre></div>
 <p><code>--manual</code>：手动模式</p>
 
 <p><code>-d</code> : 域名</p>
@@ -133,6 +133,8 @@ chmod a+x certbot-auto</code></pre></div>
 <p><code>dFPRIxj_H1PyjK_xjz6cFKK-jJEi4M7TCE2goXboSZ4</code>:记录的value</p>
 
 <p><img src="/images/dns.jpeg" alt="image-20180515135547029" /></p>
+
+<p><code>dig _acme-challenge.example.com</code> 确认TXT记录生效。</p>
 
 <p>该记录生效后按回车就会生成证书</p>
 
