@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.40.3" />
+
+
+<title>Go语言与以太坊智能合约交互 - zhangsp&#39;s blog</title>
+<meta property="og:title" content="Go语言与以太坊智能合约交互 - zhangsp&#39;s blog">
+
+
+
+  
+
+
+
+
+
+
+<link rel="stylesheet" href="https://zhangshp.github.io/css/main.css" media="all">
+<link rel="stylesheet" href="https://zhangshp.github.io/css/fonts.css">
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="https://zhangshp.github.io/" class="nav-logo">
+    <img src="https://zhangshp.github.io/images/logo.png" 
+         width="50" 
+         height="50" 
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/categories">Categories</a></li>
+    
+    <li><a href="/tags">Tags</a></li>
+    
+    <li><a href="/about/">About</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+  <article class="article">
+    <h1 class="article-title">Go语言与以太坊智能合约交互</h1>
+    
+    <span class="article-date">2018-05-22</span>
+    
+
+    <div class="article-content">
+      
+
+<h4 id="创建以太坊账户">创建以太坊账户</h4>
+
+<p>首先通过  <code>go get -u github.com/ethereum/go-ethereum</code>  安装go-ethereum，创建账户需要引入 <code>github.com/ethereum/go-ethereum/accounts/keystore</code>  下面是代码：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#999;font-style:italic">// func NewKeyStore(keydir string, scryptN, scryptP int) *KeyStore
+</span><span style="color:#999;font-style:italic"></span>ks := keystore.NewKeyStore(<span style="color:#ed9d13">&#34;/Users/mac/Library/Ethereum/keystore&#34;</span>, <span style="color:#3677a9">262144</span>, <span style="color:#3677a9">1</span>)
+
+<span style="color:#999;font-style:italic">//func (ks *KeyStore) NewAccount(passphrase string) (accounts.Account, error)
+</span><span style="color:#999;font-style:italic"></span>account, err := ks.NewAccount(<span style="color:#ed9d13">&#34;pwd&#34;</span>) <span style="color:#999;font-style:italic">// 解锁账户的密码
+</span><span style="color:#999;font-style:italic"></span><span style="color:#6ab825;font-weight:bold">if</span> err != <span style="color:#6ab825;font-weight:bold">nil</span> {
+    <span style="color:#24909d">panic</span>(err.Error())
+}
+fmt.Println(account.Address.Hex()) <span style="color:#999;font-style:italic">// 十六进制账户地址0x1Ec0f4C1dd672263E70b8f75916d12f3AB95452A
+</span><span style="color:#999;font-style:italic"></span>fmt.Println(account.URL.Path) // 路径 /Users/mac/Library/Ethereum/keystore/UTC--<span style="color:#3677a9">2018</span>-<span style="color:#3677a9">05</span>-<span style="color:#3677a9">17</span>T08-<span style="color:#3677a9">55</span>-<span style="color:#3677a9">53.520103309</span>Z--<span style="color:#3677a9">1</span>ec0f4c1dd672263e70b8f75916d12f3ab95452a</code></pre></div>
+<p><code>keystore.NewKeyStore</code> 方法的第一个参数  <code>keydir</code>  是指定存放 <code>keystore</code> 的文件夹，第二个参数 <code>scryptN</code> 是 <a href="http://rossihwang.farbox.com/post/2014-03-25">scrypt</a> 算法中的的 CPU/内存消耗参数，必须大于1, 它是2的n次幂并且小于2^(128 * r / 8)，官方包用的 <code>1 &lt;&lt; 18</code> 也就是262144，第三个参数 <code>scryptP</code> 是 <a href="http://rossihwang.farbox.com/post/2014-03-25">scrypt</a> 算法中的并行化参数，一个小于等于((2^32-1) * hLen) / MFLen的正整数，其中hLen为 32，MFlen是128 * r。（在ltc协议中 p = 1）官方包用的 1。</p>
+
+<p><code>KeyStore</code> 的 <code>NewAccount</code> 方法需要提供一个密码，这个密码也就是以后用来发送交易解锁账户的密码，所以务必保存好。</p>
+
+<h4 id="编译智能合约">编译智能合约</h4>
+
+<p>下面是一个简化的 <a href="https://solidity.readthedocs.io/en/v0.4.24/">Solidity</a> 智能合约脚本，设置与获取 <code>total</code> 值：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">pragma solidity ^<span style="color:#3677a9">0.4.18</span>;
+
+contract Demo {
+    uint total;
+    
+    <span style="color:#6ab825;font-weight:bold">function</span> Get() <span style="color:#6ab825;font-weight:bold">public</span> view returns(uint){
+        <span style="color:#6ab825;font-weight:bold">return</span> total;
+    }
+    
+    <span style="color:#6ab825;font-weight:bold">function</span> Set(uint count)<span style="color:#6ab825;font-weight:bold">public</span>{
+        total = count;
+    }
+}
+</code></pre></div>
+<p>要想执行智能合约首先需要编译合约脚本，我们通过 <code>abigen</code> 来编译，下面是安装命令：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#24909d">cd</span> <span style="color:#40ffff">$GOPATH</span>/src/github.com/ethereum/go-ethereum
+go install ./cmd/abigen</code></pre></div>
+<p>然后通过 <code>abigen</code> 根据智能合约生成 <code>Go</code> 的封装，执行：</p>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">abigen --sol demo.soc --pkg main --out demo.go</code></pre></div>
+<p><code>--sol</code> : <code>solidity</code> 智能合约脚本文件路径</p>
+
+<p><code>--pkg</code> : 生成文件的包名</p>
+
+<p><code>--out</code> :  生成文件路径</p>
+
+<p><a href="https://codeload.github.com/gist/cd02ae8c730a79161da13dc1f523921c/zip/master">demo.go</a> 点击下载生成的 Go 文件</p>
+
+<h4 id="部署智能合约">部署智能合约</h4>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">package</span> main
+
+<span style="color:#6ab825;font-weight:bold">import</span> (
+	<span style="color:#ed9d13">&#34;fmt&#34;</span>
+	<span style="color:#ed9d13">&#34;os&#34;</span>
+
+	<span style="color:#ed9d13">&#34;github.com/ethereum/go-ethereum/accounts/abi/bind&#34;</span>
+	<span style="color:#ed9d13">&#34;github.com/ethereum/go-ethereum/ethclient&#34;</span>
+)
+
+<span style="color:#6ab825;font-weight:bold">func</span> main() {
+	client, err := ethclient.Dial(<span style="color:#ed9d13">&#34;http://localhost:8545&#34;</span>) <span style="color:#999;font-style:italic">// RPC节点
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+
+	f, err := os.Open(<span style="color:#ed9d13">&#34;/Users/mac/Library/Ethereum/keystore/UTC--2018-04-27T02-32-34.436152094Z--f9abe6671c829f8c090cc10e0e99c5416f79e3aa&#34;</span>) <span style="color:#999;font-style:italic">// 获取keystore加密私钥
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+	<span style="color:#6ab825;font-weight:bold">defer</span> f.Close()
+
+	auth, err := bind.NewTransactor(f, <span style="color:#ed9d13">&#34;pwd&#34;</span>) <span style="color:#999;font-style:italic">// keystore文件内容以及解锁账户的密码
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+
+	addr, tx, _, err := DeployDemo(auth, client) <span style="color:#999;font-style:italic">// 部署合约，该方法在demo.go文件里
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+	fmt.Println(addr.Hex()) <span style="color:#999;font-style:italic">// 0xe923633556F1Ee2F4FAE714a886B7115f7e0A483 智能合约地址
+</span><span style="color:#999;font-style:italic"></span>	fmt.Println(tx.Hash().Hex()) <span style="color:#999;font-style:italic">// 交易hash
+</span><span style="color:#999;font-style:italic"></span>}
+
+<span style="color:#6ab825;font-weight:bold">func</span> checkErr(err <span style="color:#6ab825;font-weight:bold">error</span>) {
+	<span style="color:#6ab825;font-weight:bold">if</span> err != <span style="color:#6ab825;font-weight:bold">nil</span> {
+		<span style="color:#24909d">panic</span>(err.Error())
+	}
+}</code></pre></div>
+<p><code>ethclient</code> ：以太坊 client</p>
+
+<p><code>NewTransactor</code>： 通过加密 <code>json key</code> 的 stream 和 密码 创建一个交易签名</p>
+
+<p><code>DeployDemo</code> : 部署demo智能合约的方法，通过 <code>abigen</code> 生成，在demo.go文件里</p>
+
+<h4 id="调用智能合约">调用智能合约</h4>
+
+<h5 id="调用-set-方法设置值">调用 Set 方法设置值</h5>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">package</span> main
+
+<span style="color:#6ab825;font-weight:bold">import</span> (
+	<span style="color:#ed9d13">&#34;math/big&#34;</span>
+	<span style="color:#ed9d13">&#34;os&#34;</span>
+
+	<span style="color:#ed9d13">&#34;github.com/ethereum/go-ethereum/accounts/abi/bind&#34;</span>
+	<span style="color:#ed9d13">&#34;github.com/ethereum/go-ethereum/common&#34;</span>
+	<span style="color:#ed9d13">&#34;github.com/ethereum/go-ethereum/ethclient&#34;</span>
+)
+
+<span style="color:#6ab825;font-weight:bold">func</span> main() {
+	client, err := ethclient.Dial(<span style="color:#ed9d13">&#34;http://localhost:8545&#34;</span>) <span style="color:#999;font-style:italic">// RPC节点
+</span><span style="color:#999;font-style:italic"></span>	<span style="color:#6ab825;font-weight:bold">if</span> err != <span style="color:#6ab825;font-weight:bold">nil</span> {
+		<span style="color:#24909d">panic</span>(err.Error())
+	}
+
+	f, err := os.Open(<span style="color:#ed9d13">&#34;/Users/mac/Library/Ethereum/keystore/UTC--2018-04-27T02-32-34.436152094Z--f9abe6671c829f8c090cc10e0e99c5416f79e3aa&#34;</span>) <span style="color:#999;font-style:italic">// keystore
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+	<span style="color:#6ab825;font-weight:bold">defer</span> f.Close()
+
+	auth, err := bind.NewTransactor(f, <span style="color:#ed9d13">&#34;pwd&#34;</span>) <span style="color:#999;font-style:italic">//keystore文件内容以及解锁账户的密码
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+
+	demo, err := NewDemo(common.HexToAddress(<span style="color:#ed9d13">&#34;0xe923633556F1Ee2F4FAE714a886B7115f7e0A483&#34;</span>), client) <span style="color:#999;font-style:italic">// 0xe923633556F1Ee2F4FAE714a886B7115f7e0A483 智能合约地址
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+
+	_, err = demo.Set(auth, big.NewInt(<span style="color:#3677a9">100</span>)) <span style="color:#999;font-style:italic">//调用Set 方法
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+}
+
+<span style="color:#6ab825;font-weight:bold">func</span> checkErr(err <span style="color:#6ab825;font-weight:bold">error</span>) {
+	<span style="color:#6ab825;font-weight:bold">if</span> err != <span style="color:#6ab825;font-weight:bold">nil</span> {
+		<span style="color:#24909d">panic</span>(err.Error())
+	}
+}</code></pre></div>
+<p><code>NewDemo</code> : 创建一个Demo的新实例，绑定到特定的已部署合约，通过 <code>abigen</code> 生成，在demo.go文件里</p>
+
+<h5 id="调用-get-获取值">调用 Get 获取值</h5>
+<div class="highlight"><pre style="color:#d0d0d0;background-color:#202020;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#6ab825;font-weight:bold">package</span> main
+
+<span style="color:#6ab825;font-weight:bold">import</span> (
+	<span style="color:#ed9d13">&#34;fmt&#34;</span>
+
+	<span style="color:#ed9d13">&#34;github.com/ethereum/go-ethereum/common&#34;</span>
+	<span style="color:#ed9d13">&#34;github.com/ethereum/go-ethereum/ethclient&#34;</span>
+)
+
+<span style="color:#6ab825;font-weight:bold">func</span> main() {
+	client, err := ethclient.Dial(<span style="color:#ed9d13">&#34;http://localhost:8545&#34;</span>) <span style="color:#999;font-style:italic">// RPC节点
+</span><span style="color:#999;font-style:italic"></span>	<span style="color:#6ab825;font-weight:bold">if</span> err != <span style="color:#6ab825;font-weight:bold">nil</span> {
+		<span style="color:#24909d">panic</span>(err.Error())
+	}
+
+	demo, err := NewDemo(common.HexToAddress(<span style="color:#ed9d13">&#34;0xe923633556F1Ee2F4FAE714a886B7115f7e0A483&#34;</span>), client) <span style="color:#999;font-style:italic">// 0xe923633556F1Ee2F4FAE714a886B7115f7e0A483 智能合约地址
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+
+	result, err := demo.Get(<span style="color:#6ab825;font-weight:bold">nil</span>) <span style="color:#999;font-style:italic">// 调用Get 方法
+</span><span style="color:#999;font-style:italic"></span>	checkErr(err)
+	fmt.Println(result) <span style="color:#999;font-style:italic">// 100
+</span><span style="color:#999;font-style:italic"></span>}
+
+<span style="color:#6ab825;font-weight:bold">func</span> checkErr(err <span style="color:#6ab825;font-weight:bold">error</span>) {
+	<span style="color:#6ab825;font-weight:bold">if</span> err != <span style="color:#6ab825;font-weight:bold">nil</span> {
+		<span style="color:#24909d">panic</span>(err.Error())
+	}
+}</code></pre></div>
+    </div>
+ 
+    <ul class="article-taxonomy">
+                  
+      <hr>
+      <li>
+        <i class="fa fa-category"></i><a href="/categories/go">Go</a><a href="/categories/%E6%99%BA%E8%83%BD%E5%90%88%E7%BA%A6">智能合约</a>
+      </li>
+      
+    
+      
+  </article>
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="https://zhangshp.github.io/index.xml" type="application/rss+xml" target="_blank"><i class="fa fa-rss"></i> RSS feed</a>
+          </li>
+          <li>
+            <a href="https://github.com/zhangshp"><i class="fa fa-github"></i> Code</a>
+          </li>
+          <li>
+            <a href="https://zhangshp.github.io/site-notice">Site notice</a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+
+  </body>
+</html>
+
